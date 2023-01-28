@@ -1,0 +1,28 @@
+@baseUrl = {{$dotenv BASE_URL}}
+
+# @name adminLogin
+POST {{baseUrl}}/auth/portal/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "phoneNumber": "03001111111",
+  "password": "B1234567890!",
+  "role": "Admin"
+}
+
+###
+
+@adminToken = {{adminLogin.response.body.token}}
+
+###
+# @name allInvoices
+GET {{baseUrl}}/invoice HTTP/1.1
+Authorization: {{adminToken}}
+
+###
+@invoiceId = {{allInvoices.response.body.data.0._id}}
+###
+
+# GET {{baseUrl}}/invoice/{{invoiceId}} HTTP/1.1
+GET {{baseUrl}}/invoice/618e2f89a132233cea9c9aee
+Authorization: {{adminToken}}

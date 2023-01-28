@@ -1,0 +1,20 @@
+@baseUrl = {{$dotenv BASE_URL}}
+
+# @name adminLogin
+POST {{baseUrl}}/auth/portal/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "phoneNumber": "03001111111",
+  "password": "B1234567890!",
+  "role": "Admin"
+}
+
+###
+
+@authToken = {{adminLogin.response.body.token}}
+###
+
+# @name allSlides
+GET {{baseUrl}}/slide
+# ?slideType=Grocery HTTP/1.1

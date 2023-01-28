@@ -1,0 +1,17 @@
+# login with customer and then place and order
+
+@baseUrl = https://api.dobuy.pk
+
+# @name loginCsr
+POST {{baseUrl}}/auth/portal/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "phoneNumber": "03006666661",
+  "password": "B1234567890!",
+  "role": "csr"
+}
+
+###
+
+@authToken = {{loginCsr.response.body.token}}

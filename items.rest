@@ -1,0 +1,88 @@
+@baseURL = {{$dotenv BASE_URL}}
+
+
+# @name vendorLogin
+POST {{baseURL}}/auth/login
+Content-Type: application/json
+
+{
+  "phoneNumber": "03002222222",
+  "password": "B1234567890!",
+  "role": "Vendor"
+}
+
+###
+@token = {{vendorLogin.response.body.token}}
+@vendorId = {{vendorLogin.response.body.user._id}}
+###
+
+# @name getCategories
+GET {{baseURL}}/category/vendor-categories HTTP/1.1
+Authorization: {{token}}
+
+###
+@categoryId = {{getCategories.response.body.0._id}}
+###
+
+# @name createItem
+POST {{baseURL}}/item HTTP/1.1
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "details": "details of an item",
+  "title": "New Item with enabled key",
+  "category": "{{categoryId}}",
+  "basePrice": 123,
+  "sortingOrder": 33,
+  "image": "Image Url form gallery"
+}
+
+###
+
+# @name getVendorsItems
+GET {{baseURL}}/item/{{vendorId}}/all HTTP/1.1
+
+###
+
+
+# @name getMyItems
+GET {{baseURL}}/item/get-my-items
+# ?enabled=false
+Authorization: {{token}}
+
+###
+@itemId1 = {{getMyItems.response.body.0._id}}
+@itemId2 = {{getMyItems.response.body.1._id}}
+@itemId3 = {{getMyItems.response.body.2._id}}
+@itemId4 = {{getMyItems.response.body.3._id}}
+@itemId5 = {{getMyItems.response.body.4._id}}
+###
+# @name getSingleItem
+GET {{baseURL}}/item/{{itemId1}} HTTP/1.1
+
+###
+# @name sortItems
+POST {{baseURL}}/item/sort HTTP/1.1
+Authorization: {{token}}
+Content-Type: application/json
+
+[
+  "{{itemId1}}",
+  "{{itemId3}}",
+  "{{itemId2}}",
+  "{{itemId5}}",
+  "{{itemId4}}"
+]
+
+
+###
+# @name updateItem
+PUT {{baseURL}}/item/edit/{{itemId1}} HTTP/1.1
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "oldPrice": 422,
+  "sortingOrder": 555
+}

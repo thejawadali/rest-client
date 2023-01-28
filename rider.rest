@@ -1,0 +1,77 @@
+@baseUrl = {{$dotenv BASE_URL}}
+###
+# @name register
+POST {{baseUrl}}/rider/register-from-marketing-site
+Content-Type: application/json
+
+{
+  "name": "Hammad",
+  "cnic": "30000-7755577-7",
+  "password": "12345678",
+  "phoneNumber": "03300000000",
+  "address": {
+    "addressLine": "443, Nagina Street, Block A, Town, Lahore"
+  } 
+}
+
+###
+
+# @name loginRider
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+  # "phoneNumber": "03003333332",
+{
+  "phoneNumber": "03300000000",
+  "password": "12345678",
+  "role": "Rider"
+}
+
+###
+
+@authToken = {{loginRider.response.body.token}}
+
+###
+
+GET {{baseUrl}}/rider/recentOrders
+Authorization: jwt {{authToken}}
+
+
+###
+
+GET {{baseUrl}}/auth/me
+Authorization: {{authToken}}
+
+###
+# location of gulberg
+
+PATCH {{baseUrl}}/rider/ping
+Authorization: jwt {{authToken}}
+Content-Type: application/json
+
+{
+  "lat": 31.531340,
+  "lng": 74.352254
+}
+
+
+###
+# @name getCurrentOrders
+GET {{baseUrl}}/rider/currentOrders HTTP/1.1
+Authorization: {{authToken}}
+
+###
+@myOrderId = {{getCurrentOrders.response.body.0._id}}
+
+###
+# @name pickOrder
+PATCH {{baseUrl}}/order/orderPick/{{myOrderId}}
+Authorization: {{authToken}}
+
+###
+# @name deliverOrder
+PATCH {{baseUrl}}/order/orderDelivered/{{myOrderId}}
+Authorization: {{authToken}}
+###
+PATCH {{baseUrl}}/rider/goOffline
+Authorization: {{authToken}}

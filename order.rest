@@ -1,0 +1,246 @@
+@baseUrl = {{$dotenv BASE_URL}}
+
+# @name adminLogin
+POST {{baseUrl}}/auth/portal/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "phoneNumber": "03001111111",
+  "password": "B1234567890!",
+  "role": "Admin"
+}
+
+###
+
+@adminToken = {{adminLogin.response.body.token}}
+###
+
+# @name managerLogin
+POST {{baseUrl}}/auth/portal/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "phoneNumber": "03035555551",
+  "password": "B1234567890!",
+  "role": "Manager"
+}
+
+###
+
+@managerToken = {{managerLogin.response.body.token}}
+###
+
+# @name customerRegistration
+POST {{baseUrl}}/customer/register HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "Jawad Ali",
+  "phoneNumber": "03314324431",
+  "password": "12345678",
+  "deliveryAddresses": [
+    {
+      "addressLine": "tulspura.",
+      "label": "Office Address",
+      "location": {
+        "lat": 31.580327091444914,
+        "lng": 74.45986203531861
+      },
+      "instructions": "I live in tulspura. So that's my permanent address"
+    }
+  ]
+}
+###
+# @name adminLogin
+POST {{baseUrl}}/auth/portal/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "phoneNumber": "03001111111",
+  "password": "B1234567890!",
+  "role": "Admin"
+}
+
+###
+
+###
+# @name loginCustomer
+POST {{baseUrl}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "phoneNumber": "03314324431",
+  "password": "12345678",
+  "role": "Customer"
+}
+###
+###
+{
+  "phoneNumber": "03004444441",
+  "password": "B1234567890!",
+  "role": "Customer"
+}
+###
+@token = {{loginCustomer.response.body.token}}
+@deliveryAddressId = {{loginCustomer.response.body.user.deliveryAddresses.0._id}}
+###
+
+
+
+# @name getGroceryCategories
+GET {{baseUrl}}/grocery/categories HTTP/1.1
+
+###
+@categoryId = {{getGroceryCategories.response.body.0.id}}
+###
+
+# @name getGroceryProducts
+GET {{baseUrl}}/grocery/products/{{categoryId}} HTTP/1.1
+###
+@groceryOne = {{getGroceryProducts.response.body.0.id}}
+@groceryTwo = {{getGroceryProducts.response.body.1.id}}
+@groceryThree = {{getGroceryProducts.response.body.2.id}}
+###
+
+# @name placeGroceryOrder
+POST {{baseUrl}}/order/placeOrder HTTP/1.1
+Content-Type: application/json
+Authorization: {{token}}
+
+    # "couponCode": "2WW2AS21",
+{
+    "orderType": "Grocery",
+    "deliveryAddress": {
+      "instructions": "some order instructions",
+      "addressLine": "Address line of order",
+      "label": "Label of address",
+      "location": {
+        "lat": 31.580327091444914,
+        "lng": 74.45986203531861
+    }
+  },
+    "instructions": "Instructions of an order",
+    "orderedItems": [
+      {
+        "quantity": 10,
+        "itemId": {{groceryOne}},
+        "instructions": "Iusto repellat error sed eos"
+      },
+      {
+        "quantity": 1,
+        "itemId": {{groceryTwo}},
+        "instructions": "This item should be fresh"
+      },
+      {
+        "quantity": 4,
+        "itemId": {{groceryThree}},
+        "instructions": "Nobis laboriosam laudantium amet libero ab occaecati"
+      }
+    ]
+}
+###
+
+
+@lat = 31.720011196222007,
+@lng =  73.98613334364771
+
+###
+
+# @name getNearestVendors
+GET {{baseUrl}}/vendor/nearest?lat={{lat}}&lng={{lng}} HTTP/1.1
+
+###
+@vendorId = {{getNearestVendors.response.body.0._id}}
+###
+
+# @name getVendorMenu
+GET {{baseUrl}}/category/menu/{{vendorId}} HTTP/1.1
+
+###
+@itemIdT = {{getVendorMenu.response.body.0.items.0._id}}
+@itemId = {{getVendorMenu.response.body.0.items.3._id}}
+@variationId = {{getVendorMenu.response.body.0.items.3.variations.0._id}}
+@optionId = {{getVendorMenu.response.body.0.items.3.variations.0.options.0._id}}
+
+###
+
+# place order without variations
+POST {{baseUrl}}/order/placeOrder HTTP/1.1
+Content-Type: application/json
+Authorization: {{token}}
+
+  # "couponCode": "2WW2ASD3",
+{
+  "orderType": "Vendor",
+  "vendorId": "{{vendorId}}",
+  "deliveryAddress": {
+    "instructions": "some order instructions",
+    "addressLine": "Address line of order",
+    "label": "Label of address",
+    "location": {
+      "lat": 31.720135625468608,
+      "lng": 73.98529724943698
+    }
+  },
+  "orderedItems": [
+    {
+      "quantity": 1,
+      "itemId": "{{itemId}}",
+      "instructions": "This item should be fresh"
+    },
+    {
+      "quantity": 2,
+      "itemId": "{{itemIdT}}",
+      "instructions": "This item should be fresh"
+    }
+  ]
+}
+###
+
+# place vendor order with variation and options
+POST {{baseUrl}}/order/placeOrder HTTP/1.1
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "orderType": "Vendor",
+  "vendorId": "{{vendorId}}",
+  "deliveryAddressId": "{{deliveryAddressId}}",
+  "orderedItems": [
+    {
+      "quantity": 1,
+      "itemId": "{{itemId}}",
+      "instructions": "This item should be fresh",
+      "variations": [
+        {
+          "variationId": "{{variationId}}",
+          "optionIds": [
+            "{{optionId}}"
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+###
+# @name allOrders
+GET {{baseUrl}}/order/all?orderType=Grocery&riderPaid=true&orderStatus=Delivered
+# Authorization: {{managerToken}}
+Authorization: {{adminToken}}
+
+###
+@orderId = {{allOrders.response.body.data.0._id}}
+@riderId = {{allOrders.response.body.data.0.riderAssigned._id}}
+###
+
+POST {{baseUrl}}/order/pay-rider HTTP/1.1
+Authorization: {{adminToken}}
+Content-Type: application/json
+
+{
+  "orderIds": [
+    "{{orderId}}"
+  ],
+  "riderId": "{{riderId}}"
+}

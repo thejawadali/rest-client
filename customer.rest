@@ -1,0 +1,144 @@
+@baseUrl = {{$dotenv BASE_URL}}
+
+# @name registration
+POST {{baseUrl}}/customer/social-registration HTTP/1.1
+Content-Type: application/json
+
+{
+  "name": "Shan Ali",
+  "phoneNumber": "03054862136",
+  "socialId": "1122",
+  "loginType": "Google"
+}
+###
+
+# @name loginCustomer
+POST {{baseUrl}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "phoneNumber": "03054862136",
+  "password": "B1234567890!",
+  "role": "Customer"
+}
+
+
+###
+POST {{baseUrl}}/customer/unique-phoneNumber HTTP/1.1
+Content-Type: application/json
+
+{
+  "phoneNumber": "03096949371"
+}
+
+### get orders
+
+GET {{baseUrl}}/customer/recentOrders
+Authorization: {{authToken}}
+
+
+### get order details
+
+GET {{baseUrl}}/customer/track/60fd482bafff0200bd741e59
+Authorization: {{authToken}}
+
+###
+
+@authToken = {{loginCustomer.response.body.token}}
+@deliveryAddressId = {{loginCustomer.response.body.user.deliveryAddresses.0._id}}
+@lat = {{loginCustomer.response.body.user.deliveryAddresses.0.location.coordinates.1}}
+@lng = {{loginCustomer.response.body.user.deliveryAddresses.0.location.coordinates.0}}
+
+
+@lat = 31.720011196222007
+@lng = 73.98613334364771
+
+###
+# @name nearest
+
+GET {{baseUrl}}/vendor/nearest
+  ?lat={{lat}}
+  &lng={{lng}}
+
+###
+
+@vendorId = {{nearest.response.body.0._id}}
+
+###
+# @name getVendorDetails
+
+GET {{baseUrl}}/vendor/{{vendorId}}
+
+
+###
+# @name makeVendorFavourite
+POST  {{baseUrl}}/vendor/{{vendorId}}/favourite
+Authorization: {{authToken}}
+###
+# @name makeVendorUnFavourite
+POST  {{baseUrl}}/vendor/{{vendorId}}/un-favourite
+Authorization: {{authToken}}
+
+###
+# @name vendorCategories
+
+GET {{baseUrl}}/category/vendorCategories/{{vendorId}}
+
+###
+# @name vendorMenu
+
+GET {{baseUrl}}/category/menu/{{vendorId}}
+
+
+###
+@itemToOrder = {{vendorMenu.response.body.0.items.0._id}}
+@itemToOrder2 = {{vendorMenu.response.body.0.items.1._id}}
+@itemToOrder3 = {{vendorMenu.response.body.0.items.2._id}}
+# @itemToOrder4 = {{vendorMenu.response.body.0.items.4._id}}
+@itemId = 60fd4f23afff0200bd741f49
+
+###
+
+# get item variation
+GET {{baseUrl}}/item/{{itemId}}
+
+###
+# @name placeVendorOrder
+
+POST {{baseUrl}}/order/placeOrder
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "orderType": "Vendor",
+  "deliveryAddressId": "{{deliveryAddressId}}",
+  "vendorId": "{{vendorId}}",
+  "orderedItems": [
+    {
+        "quantity": 2,
+        "itemId": "{{itemToOrder}}",
+        "instructions": "This item should be fresh"
+    },
+    {
+        "quantity": 2,
+        "itemId": "{{itemToOrder2}}",
+        "instructions": "This item should be fresh"
+    },
+    {
+        "quantity": 2,
+        "itemId": "{{itemToOrder3}}",
+        "instructions": "This item should be fresh"
+    }
+  ]
+}
+
+###
+
+@orderId = 60e98158db022300bcc7c1ef
+
+###
+GET {{baseUrl}}/customer/track/{{orderId}}
+Authorization: {{authToken}}
+
+
+###

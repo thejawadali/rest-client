@@ -1,0 +1,77 @@
+@baseUrl = {{$dotenv BASE_URL}}
+
+# @name adminLogin
+POST {{baseUrl}}/auth/portal/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "phoneNumber": "03001111111",
+  "password": "B1234567890!",
+  "role": "Admin"
+}
+
+###
+
+@authToken = {{adminLogin.response.body.token}}
+###
+
+# @name managerRegistration
+POST {{baseUrl}}/manager/register HTTP/1.1
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "name": "Manager-1",
+  "phoneNumber": "03035555552",
+  "password": "12345678",
+  "radius": 4,
+  "location": {
+    "lat": 31.535414020897438, 
+    "lng": 74.35032123051008
+  }
+}
+
+###
+# @name allManagers
+GET {{baseUrl}}/manager HTTP/1.1
+Authorization: {{authToken}}
+
+###
+@managerId = {{allManagers.response.body.data.0._id}}
+###
+
+# @name singleManager
+GET {{baseUrl}}/manager/{{managerId}} HTTP/1.1
+Authorization: {{authToken}}
+
+###
+# @name updateManager
+PUT {{baseUrl}}/manager/{{managerId}} HTTP/1.1
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  "name": "Mamu Awais"
+}
+###
+### here starts the manager tasks
+# @name managerLogin
+POST {{baseUrl}}/auth/portal/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "phoneNumber": "03035555551",
+  "password": "B1234567890!",
+  "role": "Manager"
+}
+
+###
+@managerToken = {{managerLogin.response.body.token}}
+###
+
+# &endDate=2021-11-12&startDate=2021-11-05
+# GET {{baseUrl}}/order/all?&orderStatus=Delivered&riderPaid=false&page=1 HTTP/1.1
+# @name ridersOrder
+GET {{baseUrl}}/order/all
+# Authorization: {{authToken}}
+Authorization: {{managerToken}}

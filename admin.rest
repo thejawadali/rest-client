@@ -1,0 +1,61 @@
+# @baseUrl = https://api.dobuy.pk
+@baseUrl = {{$dotenv BASE_URL}}
+
+# @name adminLogin
+POST {{baseUrl}}/auth/portal/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "phoneNumber": "03001111111",
+  "password": "B1234567890!",
+  "role": "Admin"
+}
+
+###
+# @name settings
+GET {{baseUrl}}/setting/getSettings
+
+###
+
+@authToken = {{adminLogin.response.body.token}}
+
+
+###
+
+GET {{baseUrl}}/rider/unapproved-riders
+Authorization: jwt {{authToken}}
+
+### get un approved vendors
+GET {{baseUrl}}/vendor/unapproved-vendors
+Authorization: jwt {{authToken}}
+
+###
+@riderId = 60ef2c4a3b0f7800bd7d7034
+PATCH {{baseUrl}}/rider/approve/{{riderId}}
+Authorization: jwt {{authToken}}
+
+###
+# PATCH {{baseUrl}}/vendor/approve/{{vendorId}}
+Authorization: jwt {{authToken}}
+
+
+###
+# @name createVendor
+POST {{baseUrl}}/vendor/register HTTP/1.1
+Content-Type: application/json
+Authorization: {{authToken}}
+
+{
+  
+}
+
+###
+
+# @name allAdmins
+GET {{baseUrl}}/vendor/all HTTP/1.1
+Authorization: {{authToken}}
+###
+@vendorId = {{allAdmins.response.body.data.0._id}}
+###
+POST {{baseUrl}}/vendor/{{vendorId}}/toggleOnline HTTP/1.1
+Authorization: {{authToken}}

@@ -1,0 +1,47 @@
+@baseUrl = {{$dotenv BASE_URL}}
+
+# @name vendorLogin
+POST {{baseUrl}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "phoneNumber": "03086666052",
+  "password": "B1234567890!",
+  "role": "Vendor"
+}
+###
+@vendorToken = {{vendorLogin.response.body.token}}
+
+
+###
+# @name getCurrentOrders
+GET {{baseUrl}}/vendor/currentOrders HTTP/1.1
+Authorization: {{vendorToken}}
+
+###
+@orderId = {{getCurrentOrders.response.body.0._id}}
+
+###
+
+# @name acceptOrder
+PATCH {{baseUrl}}/order/acceptOrder/{{orderId}}
+Authorization: {{vendorToken}}
+###
+
+# @name rejectOrder
+PATCH {{baseUrl}}/order/rejectOrder/{{orderId}}
+Authorization: {{vendorToken}}
+###
+# @name prepareOrder
+PATCH {{baseUrl}}/order/orderPrepared/{{orderId}}
+Authorization: {{vendorToken}}
+###
+
+# @name goOnline
+PATCH {{baseUrl}}/vendor/goOnline
+Authorization: {{vendorToken}}
+###
+
+# @name goOnline
+PATCH {{baseUrl}}/vendor/goOffline
+Authorization: {{vendorToken}}

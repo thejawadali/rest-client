@@ -1,0 +1,99 @@
+
+@baseURL = {{$dotenv BASE_URL}}
+# @name vendorLogin
+POST {{$dotenv BASE_URL}}/auth/login
+Content-Type: application/json
+
+{
+  "phoneNumber": "03002222222",
+  "password": "B1234567890!",
+  "role": "Vendor"
+}
+
+###
+@token = {{vendorLogin.response.body.token}}
+
+###
+# @name getItems
+GET {{$dotenv BASE_URL}}/item/get-my-items
+Content-Type: application/json
+Authorization: {{token}}
+
+###
+
+@itemId = {{getItems.response.body.8._id}}
+
+###
+
+# @name getItemDetails
+GET {{$dotenv BASE_URL}}/item/{{itemId}}
+Content-Type: application/json
+Authorization: {{token}}
+
+###
+# @name createVariation
+POST {{$dotenv BASE_URL}}/item/variation
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "title": "Burger Addon",
+  "type": "Addon",
+  "item": "{{itemId}}",
+  "sortingOrder": 1
+}
+
+###
+
+# @name getItemVariations
+GET {{baseURL}}/item/variation/{{itemId}}
+Authorization: {{token}}
+
+###
+@variationId = {{getItemVariations.response.body.0._id}}
+@variationId1 = {{getItemVariations.response.body.1._id}}
+
+###
+# @name sortVariations
+POST {{baseURL}}/item/{{itemId}}/variations/sort HTTP/1.1
+Content-Type: application/json
+Authorization: {{token}}
+
+[
+  "{{variationId}}",
+  "{{variationId1}}"
+]
+
+###
+
+# @name createVaritionOption
+POST {{$dotenv BASE_URL}}/item/variation/option
+Content-Type: application/json
+Authorization: {{token}}
+
+{
+  "title": "Option 2",
+  "variation": "{{variationId}}",
+  "price": 2
+}
+
+###
+# @name getVaritionOptions
+GET {{baseURL}}/item/variation/{{variationId}}/option
+Authorization: {{token}}
+
+
+###
+@optionId1 = {{getVaritionOptions.response.body.0._id}}
+@optionId2 = {{getVaritionOptions.response.body.1._id}}
+
+###
+# @name sortOptions
+POST {{baseURL}}/item/variation/{{variationId}}/options/sort
+Authorization: {{token}}
+Content-Type: application/json
+
+[
+  "{{optionId1}}",
+  "{{optionId2}}"
+]

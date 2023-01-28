@@ -1,0 +1,60 @@
+@baseURL = {{$dotenv BASE_URL}}
+
+# @name vendorLogin
+POST {{baseURL}}/auth/login
+Content-Type: application/json
+
+{
+  "phoneNumber": "03002222222",
+  "password": "B1234567890!",
+  "role": "Vendor"
+}
+
+###
+@token = {{vendorLogin.response.body.token}}
+###
+# @name CreateCategory
+POST {{baseURL}}/category HTTP/1.1
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "title": "New category from ali",
+  "sortingOrder": 2
+}
+
+###
+# @name getMyCategories
+GET {{baseURL}}/category/vendor-categories HTTP/1.1
+Authorization: {{token}}
+
+###
+@categoryId = {{getMyCategories.response.body.0._id}}
+@category1Id = {{getMyCategories.response.body.1._id}}
+###
+
+# @name updateCategory
+PATCH {{baseURL}}/category/edit/{{categoryId}}
+Authorization: {{token}}
+Content-Type: application/json
+
+{
+  "title": "New category updated",
+  "sortingOrder": 22
+}
+
+###
+# @name getSingleCategory
+GET {{baseURL}}/category/getSingle/{{categoryId}} HTTP/1.1
+
+###
+# @name sortCategories
+POST {{baseURL}}/category/sort HTTP/1.1
+Authorization: {{token}}
+Content-Type: application/json
+
+[
+  "{{categoryId}}",
+  "{{category1Id}}"
+]
+

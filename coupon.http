@@ -1,0 +1,129 @@
+@baseUrl = {{$dotenv BASE_URL}}
+
+# @name adminLogin
+POST {{baseUrl}}/auth/portal/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "phoneNumber": "03001111111",
+  "password": "B1234567890!",
+  "role": "Admin"
+}
+
+###
+
+@authToken = {{adminLogin.response.body.token}}
+
+###
+# @name customerLogin
+POST {{baseUrl}}/auth/login HTTP/1.1
+Content-Type: application/json
+
+{
+  "phoneNumber": "03004444441",
+  "password": "B1234567890!",
+  "role": "Customer"
+}
+
+###
+
+@customerToken = {{customerLogin.response.body.token}}
+
+###
+
+# @name getAllCustomers
+GET {{baseUrl}}/customer/all HTTP/1.1
+Authorization: {{authToken}}
+###
+@customerId = {{getAllCustomers.response.body.data.0._id}}
+
+###
+
+# @name createCoupon
+POST {{baseUrl}}/coupon/ HTTP/1.1
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+  "title": "Alias occaecati ut",
+  "description": "Et odit quod suscipit corporis eveniet aperiam.",
+<<<<<<< HEAD
+  "code": "2ww2asd1",
+  "assignee": "OFA",
+  "minAmount": 50,
+  "usageLimit": 10,
+  "couponType": "Amount",
+  "value": 102,
+=======
+  "code": "2ww2as2f",
+  "assignee": "Selective",
+  "minAmount": 123,
+  "usageLimit": 11,
+  "couponType": "Amount",
+  "customers": [
+    "{{customerId}}"
+  ],
+  "value": 123,
+>>>>>>> 5527563a6c1f7ad9b543a9b75d6246f7f9cdf2c5
+  "expireAt": "2001-03-05"
+}
+
+###
+# @name getAllCoupons
+GET {{baseUrl}}/coupon/ HTTP/1.1
+<<<<<<< HEAD
+Authorization: {{authToken}}
+# Authorization: {{customerToken}}
+=======
+Authorization: {{customerToken}}
+>>>>>>> 5527563a6c1f7ad9b543a9b75d6246f7f9cdf2c5
+
+###
+@couponId = {{getAllCoupons.response.body.0._id}}
+
+###
+
+# @name getSingleCoupon
+GET {{baseUrl}}/coupon/{{couponId}} HTTP/1.1
+Authorization: {{authToken}}
+
+###
+
+# @name updateCoupon
+put {{baseUrl}}/coupon/{{couponId}} HTTP/1.1
+Authorization: {{authToken}}
+Content-Type: application/json
+
+{
+<<<<<<< HEAD
+  "title": "Alias occaecati ut",
+  "description": "Et odit quod suscipit corporis eveniet aperiam.",
+  "code": "2ww2as22",
+  "assignee": "OFA",
+=======
+  "title": "Updated",
+  "description": "Et odit quod suscipit corporis eveniet aperiam.",
+  "code": "2ww2as2f",
+  "assignee": "Selective",
+>>>>>>> 5527563a6c1f7ad9b543a9b75d6246f7f9cdf2c5
+  "minAmount": 123,
+  "usageLimit": 11,
+  "couponType": "Amount",
+  "customers": [
+    "{{customerId}}"
+  ],
+  "value": 123,
+  "expireAt": "2001-03-05"
+}
+
+<<<<<<< HEAD
+
+=======
+>>>>>>> 5527563a6c1f7ad9b543a9b75d6246f7f9cdf2c5
+###
+
+# @name deleteCoupon
+DELETE {{baseUrl}}/coupon/{{couponId}} HTTP/1.1
+Authorization: {{authToken}}
+
+###
